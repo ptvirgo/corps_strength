@@ -10,9 +10,16 @@ data Exercise = Exercise
   , gear :: Maybe Gear
   } deriving (Eq, Show)
 
-newtype Reps = Reps Int
+type Reps = Int
 
 data ExerciseSet = ExerciseSet
-  { exeExercise :: Exercise
+  { exercise :: Exercise
   , reps :: Reps
-  }
+  } deriving (Eq)
+
+instance Show ExerciseSet where
+  show x = (name . exercise $ x) ++ " x " ++ (show . reps $ x) ++ gstring where
+    gstring =
+      case gear . exercise $ x of
+        Just g -> " (" ++ show g ++ ")"
+        Nothing -> ""

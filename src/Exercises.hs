@@ -1,13 +1,14 @@
 module Exercises where
 
-import Data.List.NonEmpty (NonEmpty (..))
+-- import Data.List.NonEmpty (NonEmpty(..))
+import Control.Monad (replicateM)
+import System.Random (randomRIO)
 import Core
 
-glossary :: NonEmpty Exercise
+glossary :: [Exercise]
 glossary =
-  Exercise "Regular Pull-Up" PullUp Nothing
-  :|
-  [ Exercise "Behind the Neck Pull-Up" PullUp Nothing
+  [ Exercise "Regular Pull-Up" PullUp Nothing
+  , Exercise "Behind the Neck Pull-Up" PullUp Nothing
   , Exercise "Chin-Up" PullUp Nothing
   , Exercise "Close-Grip Pull-Up" PullUp Nothing
   , Exercise "Commando Pull-Up" PullUp Nothing
@@ -27,14 +28,57 @@ glossary =
   , Exercise "Lateral Swing" WheelHouse $ Just Dumbbell
   , Exercise "Rowing" WheelHouse $ Just Kettlebell
   , Exercise "Rowing" WheelHouse $ Just Dumbbell
+  , Exercise "Regular Crunch" Abs Nothing
+  , Exercise "Flutter Kicks" Abs Nothing
+  , Exercise "Elevated Crunch" Abs Nothing
+  , Exercise "Hello Dollies" Abs Nothing
+  , Exercise "Side Crunches" Abs Nothing
+  , Exercise "Leg Lifts" Abs Nothing
+  , Exercise "Reach Crunches" Abs Nothing
   , Exercise "Curls" Assist $ Just Kettlebell
   , Exercise "Curls" Assist $ Just Dumbbell
-  , Exercise "Hammer Curls" Assist $ Just Kettlebell
-  , Exercise "Hammer Curls" Assist $ Just Dumbbell
+  , Exercise "Hammer Curl" Assist $ Just Kettlebell
+  , Exercise "Hammer Curl" Assist $ Just Dumbbell
   , Exercise "Upright Row" Assist $ Just Kettlebell
   , Exercise "Upright Row" Assist $ Just Dumbbell
   , Exercise "Front Raise" Assist $ Just Kettlebell
   , Exercise "Front Raise" Assist $ Just Dumbbell
   , Exercise "Triceps Press" Assist $ Just Kettlebell
   , Exercise "Triceps Press" Assist $ Just Dumbbell
+  , Exercise "8 Count" Assist Nothing
+  , Exercise "Free Squat" Assist Nothing
+  , Exercise "Step-Up" Assist Nothing
+  , Exercise "Mountain Climber" Assist Nothing
+  , Exercise "Wrist Curl" Grip $ Just Dumbbell
+  , Exercise "Wrist Curl" Grip $ Just Kettlebell
+  , Exercise "Neck Bridge" Neck Nothing
+  , Exercise "Neck Curl" Neck $ Just Kettlebell
+  , Exercise "Neck Curl" Neck $ Just Dumbbell
   ]
+
+pickExercise :: (Exercise -> Bool) -> IO Exercise
+pickExercise f = do
+  let opts = filter f glossary
+      count = length opts
+
+  n <- randomRIO (0, count - 1)
+
+  return $
+    if count < 1
+       then Exercise "Infinite Headstand" Assist Nothing
+       else opts !! n
+
+makeMission :: Maybe Gear -> IO [ExerciseSet]
+makeMission g = do
+  pullups <- pickExercise (\x -> movement x == PullUp)
+  pushups <- pickExercise (\x -> movement x == PushUp)
+  wheelhouse <- pickExercise (\x -> movement x == WheelHouse && gear x == g)
+  assist <- pickExercise (\x -> movement x == Assist && gear x == g)
+  gripOrNeck <- pickExercise (\x -> elem (movement x) [Grip, Neck] && elem (gear x) [Nothing, g])
+  abs <- replicateM 3 $ pickExercise (\x -> movement x == Abs && elem (gear x) [Nothing, g])
+
+  return $
+    (take 6 $ cycle [ ExerciseSet pullups 10, ExerciseSet pushups 25 ])
+    ++ (take 6 $ cycle [ ExerciseSet wheelhouse 15, ExerciseSet (abs !! 0) 50 ]) 
+    ++ (take 6 $ cycle [ ExerciseSet assist 15, ExerciseSet (abs !! 1) 50 ])
+    ++ [ ExerciseSet gripOrNeck 3, ExerciseSet (abs !! 2) 50 ]
