@@ -68,17 +68,28 @@ pickExercise f = do
        then Exercise "Infinite Headstand" Assist Nothing
        else opts !! n
 
-makeMission :: Maybe Gear -> IO [ExerciseSet]
-makeMission g = do
+makeGearedMission :: Gear -> IO [ExerciseSet]
+makeGearedMission g = do
   pullups <- pickExercise (\x -> movement x == PullUp)
   pushups <- pickExercise (\x -> movement x == PushUp)
-  wheelhouse <- pickExercise (\x -> movement x == WheelHouse && gear x == g)
-  assist <- pickExercise (\x -> movement x == Assist && gear x == g)
-  gripOrNeck <- pickExercise (\x -> elem (movement x) [Grip, Neck] && elem (gear x) [Nothing, g])
-  abs <- replicateM 3 $ pickExercise (\x -> movement x == Abs && elem (gear x) [Nothing, g])
+  wheelhouse <- pickExercise (\x -> movement x == WheelHouse && gear x == Just g)
+  assist <- pickExercise (\x -> movement x == Assist && gear x == Just g)
+  gripOrNeck <- pickExercise (\x -> elem (movement x) [Grip, Neck] && elem (gear x) [Nothing, Just g])
+  abs <- replicateM 3 $ pickExercise (\x -> movement x == Abs && elem (gear x) [Nothing, Just g])
 
   return $
     (take 6 $ cycle [ ExerciseSet pullups 10, ExerciseSet pushups 25 ])
-    ++ (take 6 $ cycle [ ExerciseSet wheelhouse 15, ExerciseSet (abs !! 0) 50 ]) 
+    ++ (take 6 $ cycle [ ExerciseSet wheelhouse 15, ExerciseSet (abs !! 0) 50 ])
     ++ (take 6 $ cycle [ ExerciseSet assist 15, ExerciseSet (abs !! 1) 50 ])
     ++ [ ExerciseSet gripOrNeck 3, ExerciseSet (abs !! 2) 50 ]
+
+makeGearlessMission :: IO [ExerciseSet]
+makeGearlessMission = do
+  pullups <- pickExercise (\x -> movement x == PullUp)
+  pushups <- pickExercise (\x -> movement x == PushUp)
+  assists <- replicateM 2 $ pickExercise (\x -> movement x == Assist && gear x == Nothing)
+  abs <- replicateM 2 $ pickExercise (\x -> movement x == Abs && gear x == Nothing)
+
+  return $
+    (take 9 $ cycle [ ExerciseSet pullups 10, ExerciseSet pushups 25, ExerciseSet (abs !! 0) 50 ])
+    ++ (take 9 $ cycle [ ExerciseSet (assists !! 0) 25, ExerciseSet (assists !! 1) 25, ExerciseSet (abs !! 1) 50 ])

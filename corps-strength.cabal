@@ -31,6 +31,7 @@ executable corps-strength
   -- other-extensions:
   build-depends:
     base >=4.11 && <4.12
+    , optparse-applicative >=0.16 && <0.17
     , CorpsStrength
   hs-source-dirs:      app
   default-language:    Haskell2010
