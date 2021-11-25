@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                corps-strength
-version:             0.1.0.0
+version:             0.2.0.0
 synopsis:            Corps Strength Stadalone Training Generator
 -- description:
 license:             GPL-3
@@ -13,14 +13,14 @@ maintainer:          mailbox@pablovirgo.com
 category:            Text
 build-type:          Simple
 extra-source-files:  ChangeLog.md
-cabal-version:       >=1.10
+cabal-version:       >=2.0
 
 library CorpsStrength
   exposed-modules: Core, Exercises
   -- other-modules:
   -- other-extensions:
   build-depends:
-    base >=4.11 && <4.12
+    base >=4.11 && <5.0
     , random >=1.2 && <1.3
   hs-source-dirs:      src
   default-language:    Haskell2010
@@ -30,8 +30,24 @@ executable corps-strength
   -- other-modules:       Core, Exercises
   -- other-extensions:
   build-depends:
-    base >=4.11 && <4.12
+    base >=4.11 && <5.0
     , optparse-applicative >=0.16 && <0.17
     , CorpsStrength
-  hs-source-dirs:      app
+  hs-source-dirs:      cli
   default-language:    Haskell2010
+
+executable corps-strength-gui
+  main-is:   Main.hs
+  build-depends:
+    base >=4.11 && <5.0
+    , async ^>=2.2
+    , bytestring ^>=0.10
+    , text ^>=1.2
+    , gi-gdk ^>=3.0
+    , gi-gtk ^>=3.0
+    , gi-gtk-declarative ^>=0.7.1
+    , gi-gtk-declarative-app-simple ^>=0.7.1
+    , CorpsStrength
+  hs-source-dirs:      gui
+  default-language:    Haskell2010
+  ghc-options: -threaded
